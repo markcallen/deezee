@@ -1,0 +1,12 @@
+version: "1"
+
+globals:
+  - PUBLIC_IP
+
+processes:
+- name: packer
+  tasks:
+  - name: getip
+    image: byrnedo/alpine-curl
+    command: -Ls http://ipinfo.io/ip
+    results: PUBLIC_IP
