@@ -1,7 +1,7 @@
 version: "1"
 
 globals:
-  - PUBLIC_IP
+  PUBLIC_IP: null
 
 processes:
 - name: packer
@@ -9,4 +9,7 @@ processes:
   - name: getip
     image: byrnedo/alpine-curl
     command: -Ls http://ipinfo.io/ip
-    results: PUBLIC_IP
+    result: PUBLIC_IP
+  - name: whois
+    image: airtonzanon/whois:latest
+    command: ${PUBLIC_IP}
