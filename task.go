@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -89,6 +90,34 @@ func (t *Task) runImage() string {
 	if err2 := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
 		panic(err2)
 	}
+	fmt.Printf("\t\t\tStarting Container\n")
+
+	if len(resp.Warnings) > 0 {
+		fmt.Println("\t\t\t\tWarnings:", resp.Warnings)
+	}
+
+	fmt.Println("\t\t\tOutput")
+
+	var buffer bytes.Buffer
+
+	go func() {
+		reader, err := cli.ContainerLogs(context.Background(), resp.ID, types.ContainerLogsOptions{
+			ShowStdout: true,
+			ShowStderr: true,
+			Follow:     true,
+			Timestamps: false,
+		})
+		if err != nil {
+			panic(err)
+		}
+		defer reader.Close()
+
+		scanner := bufio.NewScanner(reader)
+		for scanner.Scan() {
+			fmt.Printf("\t\t\t\t%s\n", scanner.Text())
+			buffer.WriteString(scanner.Text())
+		}
+	}()
 
 	statusCh, errCh := cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
 	select {
@@ -99,20 +128,28 @@ func (t *Task) runImage() string {
 	case <-statusCh:
 	}
 
-	out, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true})
-	if err != nil {
-		panic(err)
-	}
+	fmt.Printf("\n")
 
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(out)
-	res := buf.String()
+	fmt.Printf("\t\t\tContainer Stopped\n")
 
 	if err := cli.ContainerRemove(ctx, resp.ID, types.ContainerRemoveOptions{}); err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("\t\tResult: %s", res)
+	res := stripCtlAndExtFromBytes(buffer.String())
 
 	return res
+}
+
+func stripCtlAndExtFromBytes(str string) string {
+	b := make([]byte, len(str))
+	var bl int
+	for i := 0; i < len(str); i++ {
+		c := str[i]
+		if c >= 32 && c < 127 {
+			b[bl] = c
+			bl++
+		}
+	}
+	return string(b[:bl])
 }
