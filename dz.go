@@ -11,18 +11,22 @@ import (
 
 type conf struct {
 	Version   string
-	Globals   []string `yaml:",flow"`
+	Globals   map[string]string
 	Processes []Process
 }
 
 func main() {
 	var dz conf
 	dz.getConf()
-	//dz.printConf()
+	dz.printConf()
+
+	fmt.Printf("Globals: %v\n", dz.Globals)
 
 	for _, process := range dz.Processes {
 		process.Run(dz.Globals)
 	}
+
+	fmt.Printf("Globals: %v\n", dz.Globals)
 }
 
 func (c *conf) getConf() *conf {
