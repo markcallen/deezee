@@ -4,7 +4,7 @@ globals:
   PUBLIC_IP: null
 
 processes:
-- name: packer
+- name: whoami
   tasks:
   - name: getip
     image: byrnedo/alpine-curl
