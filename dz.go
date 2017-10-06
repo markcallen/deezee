@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
 	//https://github.com/go-yaml/yaml
 	"gopkg.in/yaml.v2"
+
+	// https://github.com/alecthomas/kingpin
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 type conf struct {
@@ -15,22 +19,32 @@ type conf struct {
 	Processes []Process
 }
 
+var (
+	app   = kingpin.New("dz", "Run tasks using Docker")
+	debug = app.Flag("debug", "Enable debug mode.").Bool()
+
+	run     = app.Command("run", "Run processes and tasks.")
+	runFile = run.Flag("file", "yaml file.").Required().String()
+)
+
 func main() {
-	var dz conf
-	dz.getConf()
-	dz.printConf()
+	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 
-	fmt.Printf("Globals: %v\n", dz.Globals)
+	// run
+	case run.FullCommand():
+		var dz conf
+		dz.getConf(*runFile)
+		dz.printConf()
 
-	for _, process := range dz.Processes {
-		process.Run(dz.Globals)
+		for _, process := range dz.Processes {
+			process.Run(dz.Globals)
+		}
 	}
 
-	fmt.Printf("Globals: %v\n", dz.Globals)
 }
 
-func (c *conf) getConf() *conf {
-	yamlFile, err := ioutil.ReadFile("sample.yml")
+func (c *conf) getConf(filename string) *conf {
+	yamlFile, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
 	}
@@ -47,6 +61,6 @@ func (c *conf) printConf() {
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
-	fmt.Printf("--- t dump:\n%s\n\n", string(d))
+	fmt.Printf("yaml:\n%s\n\n", string(d))
 
 }
