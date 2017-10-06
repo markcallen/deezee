@@ -76,11 +76,19 @@ func (t *Task) runImage() string {
 	containerConfig := &container.Config{
 		Image: t.Image,
 		Cmd:   strings.Fields(t.Command),
+		Env:   t.Environment,
 	}
 
 	hostConfig := &container.HostConfig{
 		AutoRemove: false,
+		Binds:      t.Volumes,
 	}
+
+	fmt.Printf("\t\tCreating Container\n")
+	fmt.Printf("\t\t\tImage: %s\n", containerConfig.Image)
+	fmt.Printf("\t\t\tCommand: %s\n", containerConfig.Cmd)
+	fmt.Printf("\t\t\tEnvironment: %s\n", containerConfig.Env)
+	fmt.Printf("\t\t\tBinds: %s\n", hostConfig.Binds)
 
 	resp, err := cli.ContainerCreate(ctx, containerConfig, hostConfig, nil, t.Name)
 	if err != nil {
@@ -90,13 +98,13 @@ func (t *Task) runImage() string {
 	if err2 := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
 		panic(err2)
 	}
-	fmt.Printf("\t\t\tStarting Container\n")
+	fmt.Printf("\t\tStarting Container\n")
 
 	if len(resp.Warnings) > 0 {
-		fmt.Println("\t\t\t\tWarnings:", resp.Warnings)
+		fmt.Println("\t\t\tWarnings:", resp.Warnings)
 	}
 
-	fmt.Println("\t\t\tOutput")
+	fmt.Println("\t\tOutput")
 
 	var buffer bytes.Buffer
 
@@ -114,7 +122,7 @@ func (t *Task) runImage() string {
 
 		scanner := bufio.NewScanner(reader)
 		for scanner.Scan() {
-			fmt.Printf("\t\t\t\t%s\n", scanner.Text())
+			fmt.Printf("\t\t\t%s\n", scanner.Text())
 			buffer.WriteString(scanner.Text())
 		}
 	}()
@@ -130,7 +138,7 @@ func (t *Task) runImage() string {
 
 	fmt.Printf("\n")
 
-	fmt.Printf("\t\t\tContainer Stopped\n")
+	fmt.Printf("\t\tContainer Stopped\n")
 
 	if err := cli.ContainerRemove(ctx, resp.ID, types.ContainerRemoveOptions{}); err != nil {
 		panic(err)
