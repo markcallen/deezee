@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"html/template"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -20,6 +24,28 @@ func replaceGlobalVariables(g map[string]string, str string) string {
 
 	replacer := strings.NewReplacer(vars...)
 	return replacer.Replace(str)
+}
+
+func replaceGlobalJSONVariables(g map[string]string, str string) string {
+	m := map[string]interface{}{}
+	for v := range g {
+		re := regexp.MustCompile(`\$\{` + v + `(\.[\S]+)\}`)
+		s := re.ReplaceAllString(str, `{{$1}}`)
+
+		t := template.Must(template.New("").Parse(s))
+
+		if err := json.Unmarshal([]byte(g[v]), &m); err != nil {
+			continue
+		}
+
+		var tpl bytes.Buffer
+		if err := t.Execute(&tpl, m); err != nil {
+			panic(err)
+		}
+		str = tpl.String()
+	}
+
+	return str
 
 }
 
@@ -42,15 +68,18 @@ func (p *Process) Run(g map[string]string) {
 		printGlobals(g)
 
 		task.Command = replaceGlobalVariables(g, task.Command)
+		task.Command = replaceGlobalJSONVariables(g, task.Command)
 		task.Command = replaceEnvVariables(task.Command)
 
 		for i := range task.Environment {
 			task.Environment[i] = replaceGlobalVariables(g, task.Environment[i])
+			task.Environment[i] = replaceGlobalJSONVariables(g, task.Environment[i])
 			task.Environment[i] = replaceEnvVariables(task.Environment[i])
 		}
 
 		for i := range task.Volumes {
 			task.Volumes[i] = replaceGlobalVariables(g, task.Volumes[i])
+			task.Volumes[i] = replaceGlobalJSONVariables(g, task.Volumes[i])
 			task.Volumes[i] = replaceEnvVariables(task.Volumes[i])
 		}
 
