@@ -74,9 +74,12 @@ func (t *Task) runImage() string {
 	ctx := context.Background()
 
 	containerConfig := &container.Config{
-		Image: t.Image,
-		Cmd:   strings.Fields(t.Command),
-		Env:   t.Environment,
+		Image:        t.Image,
+		Cmd:          strings.Fields(t.Command),
+		Env:          t.Environment,
+		Tty:          true,
+		AttachStdout: true,
+		AttachStderr: true,
 	}
 
 	hostConfig := &container.HostConfig{
