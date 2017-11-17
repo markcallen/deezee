@@ -34,6 +34,66 @@ processes:
     command: ${PUBLIC_IP}
 ````
 
+### Version
+
+````
+version: "1"
+`````
+
+The version of the file.  Currently only 1 is supported.
+
+### Globals
+
+````
+globals:
+  PUBLIC_IP: null
+````
+
+Global variables that need to be declared in order to be set in a result and used
+in commands, environment or volumes.  Global variables can be used in the
+following format ${<global variable>}, for a result in JSON the values can be
+accessed using ${<global variable>.key1.key2}.
+
+Environment variables can be used with the format $env{<VAR>}.  For example to pass $PWD
+into the process use $env{PWD}.
+
+### Processes
+
+````
+processes:
+- name: whoami
+````
+
+There can be multiple processes containing one or many tasks, each one can have
+a unique name.
+
+### Tasks
+
+````
+- name: getip
+  image: byrnedo/alpine-curl
+  command: -Ls http://ipinfo.io/ip
+  result: PUBLIC_IP
+````
+
+Each task needs a name, docker image and command.
+
+Any output can be assigned to a global variable using the result.
+
+Volumes can be mounted using:
+
+````
+volumes:
+  - $env{PWD}/packer:/terraform
+````
+
+Environment variables can be set in the container using:
+
+````
+environment:
+  - AWS_ACCESS_KEY_ID=$env{AWS_ACCESS_KEY_ID}
+````
+
 ## License & Authors
 - Author:: Mark Allen (mark@markcallen.com)
 
