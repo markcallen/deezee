@@ -34,7 +34,7 @@ type conf struct {
 }
 
 var (
-	app   = kingpin.New("dz", "Run tasks using Docker")
+	app   = kingpin.New("deezee", "Run tasks using Docker")
 	debug = app.Flag("debug", "Enable debug mode.").Bool()
 
 	run     = app.Command("run", "Run processes and tasks.")
@@ -48,7 +48,9 @@ func main() {
 	case run.FullCommand():
 		var dz conf
 		dz.getConf(*runFile)
-		dz.printConf()
+		if *debug {
+			dz.printConf()
+		}
 
 		for _, process := range dz.Processes {
 			process.Run(dz.Globals)
