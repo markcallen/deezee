@@ -1,14 +1,18 @@
-#dz
+# deezee
 
 Docker task runner
 
 ## Get
 
+````
 go get github.com/markcallen/deezee
+````
 
 ## Run
 
+````
 deezee run --file=example/whoami.yml
+````
 
 ## File format
 
