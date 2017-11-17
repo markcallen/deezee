@@ -1,6 +1,7 @@
 # deezee
 
-Docker task runner
+Docker task runner.  Run tasks using docker images and pass information between
+them.  Replace shell scripts and no need to install local programs.
 
 ## Get
 
