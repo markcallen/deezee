@@ -21,10 +21,10 @@ import (
 	"fmt"
 	"strings"
 
-	// https://github.com/moby/moby/tree/master/client
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/client"
+	client "docker.io/go-docker"
+	"docker.io/go-docker/api/types"
+	"docker.io/go-docker/api/types/container"
+
 )
 
 // Task : docker image and command to return
