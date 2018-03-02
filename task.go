@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"io"
+	"encoding/json"
 
 	client "docker.io/go-docker"
 	"docker.io/go-docker/api/types"
@@ -52,6 +54,8 @@ func (t *Task) getImage() {
 		t.Image = t.Image + ":latest"
 	}
 
+	fmt.Printf("\t\tLooking for image: %s\n", t.Image)
+
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		panic(err)
@@ -59,10 +63,35 @@ func (t *Task) getImage() {
 
 	ctx := context.Background()
 
-	_, err = cli.ImagePull(ctx, t.Image, types.ImagePullOptions{})
+	pull, err := cli.ImagePull(ctx, t.Image, types.ImagePullOptions{})
 	if err != nil {
 		panic(err)
 	}
+
+	d := json.NewDecoder(pull)
+
+  type Event struct {
+      Status         string `json:"status"`
+      Error          string `json:"error"`
+      Progress       string `json:"progress"`
+      ProgressDetail struct {
+          Current int `json:"current"`
+          Total   int `json:"total"`
+      } `json:"progressDetail"`
+  }
+
+  var event *Event
+  for {
+      if err := d.Decode(&event); err != nil {
+          if err == io.EOF {
+              break
+          }
+
+          panic(err)
+      }
+
+      fmt.Printf("\t\t\t%+s\n", event.Status)
+  }
 
 	images, err := cli.ImageList(ctx, types.ImageListOptions{})
 	if err != nil {
