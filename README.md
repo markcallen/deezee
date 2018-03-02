@@ -15,6 +15,12 @@ go get github.com/markcallen/deezee
 deezee run --file=example/whoami.yml
 ````
 
+or in Docker
+
+````
+docker run --rm -v ${PWD}/examples:/deezee -v /var/run/docker.sock:/var/run/docker.sock markcallen/deezee run --file=/deezee/whoami.yml
+````
+
 ## File format
 
 ````
@@ -93,6 +99,14 @@ Environment variables can be set in the container using:
 ````
 environment:
   - AWS_ACCESS_KEY_ID=$env{AWS_ACCESS_KEY_ID}
+````
+
+## Development
+
+Get all the packages for development
+
+````
+dep ensure
 ````
 
 ## License & Authors
