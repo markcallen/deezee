@@ -1,2 +1,4 @@
 # Ignore the compiled binary
 deezee
+# Ignore the vendor directory created by dep
+vendor/
