@@ -67,7 +67,7 @@ func replaceEnvVariables(str string) string {
 	vars := make([]string, 0, len(os.Environ())*2)
 
 	for _, e := range os.Environ() {
-		pair := strings.Split(e, "=")
+		pair := strings.SplitN(e, "=", 2)
 		vars = append(vars, "$env{"+pair[0]+"}", pair[1])
 	}
 
